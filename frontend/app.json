@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "GeoDecouvreTout",
+    "slug": "geodecouvretout",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.emericpp.geodecouvretout"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.emericpp.geodecouvretout"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "@rnmapbox/maps",
+        {
+          "mapboxAccessToken": "TA_CLE_API_MAPBOX"
+        }
+      ]
+    ]
+  }
+}
