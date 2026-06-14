@@ -25,10 +25,13 @@ export class Question {
 
   // Pour la géolocalisation
   @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326, nullable: true })
-  point_cible: any; // PostGIS Point
+  point_cible: any; // PostGIS Point (optionnel, pour compatibilité)
 
   @Column({ type: 'int', default: 20, nullable: true })
-  rayon_validation: number; // Rayon en mètres
+  rayon_validation: number; // Rayon en mètres (optionnel, pour compatibilité)
+
+  @Column({ type: 'geometry', spatialFeatureType: 'Polygon', srid: 4326, nullable: true })
+  polygone_validation: any; // PostGIS Polygon (pour les zones complexes)
 
   @Column({ type: 'text', nullable: true })
   indice: string;

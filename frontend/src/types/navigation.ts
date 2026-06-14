@@ -31,11 +31,15 @@ interface QuestionQCM extends QuestionBase {
 
 interface QuestionLocalisation extends QuestionBase {
   type: 'localisation';
-  point_cible: {
+  point_cible?: {
     type: 'Point';
     coordinates: [number, number]; // [longitude, latitude]
   };
-  rayon_validation: number;
+  rayon_validation?: number;
+  polygone_validation?: {
+    type: 'Polygon';
+    coordinates: [number, number][][]; // Tableau de polygones (pour PostGIS)
+  };
 }
 
 type Question = QuestionQCM | QuestionLocalisation;

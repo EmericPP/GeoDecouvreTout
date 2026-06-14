@@ -26,7 +26,7 @@ export class QuestionsService {
     });
   }
 
-  // Vérifier si un point (lat/lng) est dans le rayon de validation d'une question de géolocalisation
+  // Vérifier si un point (lat/lng) est dans le polygone ou le rayon de validation d'une question de géolocalisation
   async isUserAtTarget(
     lat: number,
     lng: number,
@@ -36,20 +36,34 @@ export class QuestionsService {
       where: { id: questionId, type: 'localisation' },
     });
 
-    if (!question || !question.point_cible) {
+    if (!question) {
       return false;
     }
 
-    // Requête PostGIS pour vérifier si le point est dans le rayon
-    const result = await this.questionsRepository.query(
-      `SELECT ST_DWithin(
-        ST_GeomFromText('POINT(${lng} ${lat})', 4326),
-        ST_GeomFromText('${JSON.stringify(question.point_cible)}', 4326),
-        ${question.rayon_validation}
-      ) AS is_near`,
-    );
+    // Si un polygone est défini, vérifier si le point est dedans
+    if (question.polygone_validation) {
+      const result = await this.questionsRepository.query(
+        `SELECT ST_Within(
+          ST_GeomFromText('POINT(${lng} ${lat})', 4326),
+          ST_GeomFromText('${JSON.stringify(question.polygone_validation)}', 4326)
+        ) AS is_inside`,
+      );
+      return result[0]?.is_inside || false;
+    }
 
-    return result[0]?.is_near || false;
+    // Sinon, vérifier avec le point + rayon (ancienne méthode)
+    if (question.point_cible && question.rayon_validation) {
+      const result = await this.questionsRepository.query(
+        `SELECT ST_DWithin(
+          ST_GeomFromText('POINT(${lng} ${lat})', 4326),
+          ST_GeomFromText('${JSON.stringify(question.point_cible)}', 4326),
+          ${question.rayon_validation}
+        ) AS is_near`,
+      );
+      return result[0]?.is_near || false;
+    }
+
+    return false;
   }
 
   // Créer une nouvelle question

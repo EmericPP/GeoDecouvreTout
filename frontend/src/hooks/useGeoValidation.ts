@@ -10,7 +10,7 @@ interface GeoValidationState {
 }
 
 /**
- * Hook pour vérifier si l'utilisateur est dans le rayon de validation d'une question de géolocalisation.
+ * Hook pour vérifier si l'utilisateur est dans le polygone ou le rayon de validation d'une question de géolocalisation.
  * Utilise @turf/turf pour les calculs géospatiaux côté frontend.
  */
 export const useGeoValidation = (
@@ -41,19 +41,42 @@ export const useGeoValidation = (
     const checkPosition = () => {
       try {
         const userPoint = turf.point([userLng, userLat]);
-        const targetPoint = turf.point(question.point_cible.coordinates);
-        
-        // Calculer la distance en mètres
-        const distance = turf.distance(userPoint, targetPoint, { units: 'meters' });
-        
-        // Vérifier si la distance est <= au rayon de validation
-        const isValid = distance <= question.rayon_validation;
 
+        // Si un polygone est défini, vérifier si le point est dedans
+        if (question.polygone_validation) {
+          const polygon = turf.polygon(question.polygone_validation.coordinates);
+          const isValid = turf.booleanPointInPolygon(userPoint, polygon);
+          
+          setValidation({
+            isValid,
+            distance: null, // Pas de distance calculée pour un polygone
+            isLoading: false,
+            error: null,
+          });
+          return;
+        }
+
+        // Sinon, utiliser le point + rayon (ancienne méthode)
+        if (question.point_cible && question.rayon_validation) {
+          const targetPoint = turf.point(question.point_cible.coordinates);
+          const distance = turf.distance(userPoint, targetPoint, { units: 'meters' });
+          const isValid = distance <= question.rayon_validation;
+
+          setValidation({
+            isValid,
+            distance,
+            isLoading: false,
+            error: null,
+          });
+          return;
+        }
+
+        // Si aucune méthode de validation n'est définie
         setValidation({
-          isValid,
-          distance,
+          isValid: false,
+          distance: null,
           isLoading: false,
-          error: null,
+          error: 'Aucune zone de validation définie',
         });
       } catch (error) {
         console.error('Erreur lors de la validation géospatiale:', error);
